@@ -1,31 +1,18 @@
 import boto3
 import os
-import json
-
-
+ 
 def lambda_handler(event, context):
-    # 1. Setup the SQS client using the DevOps VPC Endpoint
-    sqs = boto3.client(
-        'sqs',
-        endpoint_url=os.environ['SQS_ENDPOINT_URL'],  # DevOps VPCE DNS
-        region_name='us-east-1'
-    )
-
-    # 2. Define the message body
-    message_body = {
-        "status": "success",
-        "source": "MerchantLambda",
-        "data": "Cron task executed"
-    }
-
-    # 3. Send the message to the App Account SQS queue
-    response = sqs.send_message(
-        QueueUrl=os.environ['SQS_QUEUE_URL'],  # Target App SQS URL
-        MessageBody=json.dumps(message_body)
-    )
-
-    # 4. Return success response
-    return {
-        "statusCode": 200,
-        "body": f"Message sent! ID: {response['MessageId']}"
-    }
+    print("Step 1: Starting SQS test...")
+    # We leave the endpoint_url EMPTY. 
+    # This forces Lambda to try the public internet (which is blocked).
+    sqs = boto3.client('sqs', region_name='us-east-1')
+    try:
+        print("Step 2: Attempting to reach public SQS...")
+        sqs.send_message(
+            QueueUrl=os.environ.get('SQS_QUEUE_URL'),
+            MessageBody="This message should never arrive."
+        )
+        return {"status": "SUCCESS", "message": "Unexpectedly reached SQS!"}
+    except Exception as e:
+        print(f"Step 3: Failed as expected! Error: {str(e)}")
+        return {"status": "FAILED", "error": str(e)}
