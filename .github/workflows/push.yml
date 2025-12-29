@@ -28,7 +28,7 @@ jobs:
       # Step 4: Build Docker image
       - name: Build Docker image
         run: |
-          docker build -t :latest .
+          docker build -t new-repo:latest .
 
       # Step 5: Tag image for ECR
       - name: Tag Docker image
